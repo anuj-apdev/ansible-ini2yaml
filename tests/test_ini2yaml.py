@@ -43,7 +43,7 @@ def test_hostvars(request, tmpdir, ansible_adhoc):
     with open(ini_inventory_filename, 'r', encoding="utf8") as ini_inventory_file, \
             open(yaml_inventory_filename, 'w', encoding="utf8") as yaml_inventory_file:
         with subprocess.Popen(os.path.join(request.fspath.dirname,
-                                            "../ini2yaml"),
+                                           "../ini2yaml"),
                               stdin=ini_inventory_file,
                               stdout=yaml_inventory_file) as process:
             process.communicate()
