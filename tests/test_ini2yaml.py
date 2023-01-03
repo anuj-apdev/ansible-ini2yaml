@@ -42,20 +42,20 @@ def test_hostvars(request, tmpdir, ansible_adhoc):
 
     with open(ini_inventory_filename, 'r', encoding="utf8") as ini_inventory_file, \
             open(yaml_inventory_filename, 'w', encoding="utf8") as yaml_inventory_file:
-        with subprocess.Popen([os.path.join(request.fspath.dirname,
-                                            "../ini2yaml"), ini_inventory_filename],
+        with subprocess.Popen(os.path.join(request.fspath.dirname,
+                                            "../ini2yaml"),
                               stdin=ini_inventory_file,
                               stdout=yaml_inventory_file) as process:
             process.communicate()
             assert process.returncode == 0
-        # ['hostvars']['localhost']
+    # ['hostvars']['localhost']
     ini_hostvars = yaml.load(ansible_adhoc(inventory=ini_inventory_filename).localhost.debug(
         msg='{{ hostvars.localhost | to_yaml }}').values()[0]['msg'], Loader=yaml.FullLoader)
     # ['hostvars']['localhost']
     yaml_hostvars = yaml.load(ansible_adhoc(inventory=yaml_inventory_filename).localhost.debug(
         msg='{{ hostvars.localhost | to_yaml }}').values()[0]['msg'], Loader=yaml.FullLoader)
-    print('ini-hostname -> ', ini_hostvars)
-    print('yaml-hostname -> ', yaml_hostvars)
+    # print('ini-hostname -> ', ini_hostvars)
+    # print('yaml-hostname -> ', yaml_hostvars)
 
     normalize(ini_hostvars, yaml_hostvars)
 

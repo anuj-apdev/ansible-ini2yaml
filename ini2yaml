@@ -11,7 +11,7 @@ import yaml
 
 
 class LiteralUniCode(six.text_type):
-    """Literal Unicode Type for Yaml representation."""
+    """literal unicode for representer"""
 
 
 def literal_unicode_representer(dumper, data):
@@ -23,37 +23,34 @@ yaml.add_representer(LiteralUniCode, literal_unicode_representer)
 
 config = configparser.RawConfigParser(allow_no_value=True)
 config.optionxform = str
-config.read(sys.argv[1])
+config.read_file(sys.stdin)
 
 inventory = {}
 
-varRegex = re.compile(
-    "[\t ]*([a-zA-Z][a-zA-Z0-9_]+)=('[^']+'|\"[^\"]+\"|[^ ]+)")
+varRegex = re.compile("[\t ]*([a-zA-Z][a-zA-Z0-9_]+)=('[^']+'|\"[^\"]+\"|[^ ]+)")
 noQuotesNeededRegex = re.compile("^([-.0-9a-zA-Z]+|'[^']+'|\"[^\"]+\")$")
 
 
 # Parse host variable and return corresponding YAML object
 def parse_value(host_vars):
-    '''Parses the values undwer host segment'''
+    '''Parses the values under host segment'''
     # Integers, booleans and quoted strings strings must not be quoted
     if noQuotesNeededRegex.match(host_vars):
         result = yaml.load('value: ' + host_vars, Loader=yaml.FullLoader)['value']
     else:
-        result = yaml.load('value: "' + host_vars + '"',
-                           Loader=yaml.FullLoader)['value']
+        result = yaml.load('value: "' + host_vars + '"', Loader=yaml.FullLoader)['value']
     if isinstance(result, six.string_types):
         # Use YAML block literal for multi-line strings
         if '\\n' in result:
             return LiteralUniCode(result.replace('\\n', '\n'))
-        try:  # Unwrap nested YAML structures
-            new_result = yaml.load(
-                'value: ' + result, Loader=yaml.FullLoader)['value']
-            if isinstance(new_result, dict, list):
+        try:
+            new_result = yaml.load('value: ' + result, Loader=yaml.FullLoader)['value']
+            if isinstance(new_result, (dict, list)):
                 result = new_result
-        except Exception as ex:
-            print("An error occured while converting ini to yaml", ex)
-            raise
-
+        except yaml.scanner.ScannerError:
+            pass
+        else:
+            pass
     return result
 
 
